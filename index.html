@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zen Globe (No Mapbox)</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #05070d, #000000);
+    }
+    #globeViz {
+      width: 100vw;
+      height: 100vh;
+    }/* remove any UI overlays */
+.scene-tooltip { display: none !important; }
+
+  </style>
+</head>
+<body><div id="globeViz"></div><script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script><script src="https://unpkg.com/globe.gl"></script><script>
+  const world = Globe()
+    (document.getElementById('globeViz'))
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    .backgroundColor('rgba(0,0,0,0)')
+    .showAtmosphere(true)
+    .atmosphereColor('#6fb3ff')
+    .atmosphereAltitude(0.25);
+
+  // Initial view
+  world.pointOfView({ lat: 20, lng: 0, altitude: 2.2 });
+
+  // Remove all controls for Zen feel
+  world.controls().enableZoom = true;
+  world.controls().enablePan = false;
+  world.controls().enableRotate = true;
+  world.controls().autoRotate = true;
+  world.controls().autoRotateSpeed = 0.4;
+
+  // Smooth inertia tuning
+  world.controls().dampingFactor = 0.08;
+  world.controls().enableDamping = true;
+
+  // Subtle ambient spin enhancement
+  let spin = true;
+  function animate() {
+    if (spin) {
+      const p = world.pointOfView();
+      world.pointOfView({ lng: p.lng + 0.02, lat: p.lat, altitude: p.altitude }, 0);
+    }
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  // stop spin on interaction
+  document.addEventListener('mousedown', () => spin = false);
+  document.addEventListener('touchstart', () => spin = false);
+
+</script></body>
+</html>
