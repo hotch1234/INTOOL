@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>INTOOL Maps Engine</title>
+
+<!-- Leaflet (map engine) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 999;
+  background: rgba(0,0,0,0.5);
+  color: #7fb6ff;
+  padding: 6px 10px;
+  font-family: Arial;
+  font-size: 12px;
+  border-radius: 6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hud">INTOOL • Real World Navigation</div>
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+// INIT MAP
+const map = L.map('map', {
+  zoomControl: true,
+  attributionControl: false
+}).setView([20, 0], 2);
+
+// TILE LAYER (REAL WORLD DATA)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  detectRetina: true
+}).addTo(map);
+
+// SAMPLE CITY MARKERS (you can expand this)
+const cities = [
+  {name: "New York", coords: [40.7128, -74.0060]},
+  {name: "London", coords: [51.5074, -0.1278]},
+  {name: "Tokyo", coords: [35.6762, 139.6503]},
+  {name: "Los Angeles", coords: [34.0522, -118.2437]},
+  {name: "Paris", coords: [48.8566, 2.3522]},
+  {name: "Dubai", coords: [25.2048, 55.2708]}
+];
+
+// ADD MARKERS
+cities.forEach(city => {
+  L.marker(city.coords)
+    .addTo(map)
+    .bindPopup(`<b>${city.name}</b>`);
+});
+
+// SMOOTH ZOOM FEEL ENHANCEMENT
+map.options.zoomSnap = 0.5;
+map.options.wheelPxPerZoomLevel = 120;
+
+// MOBILE FRIENDLY DRAG SPEED
+map.dragging.inertia = true;
+
+</script>
+
+</body>
+</html>
