@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zen Globe Offline FIXED</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: radial-gradient(circle at center, #0a0f1f, #000);
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #7fb6ff;
+      font-family: sans-serif;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+<div class="label">Zen Globe (Fixed Render)</div>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+// globe settings
+const R = 140;
+let rot = 0;
+let speed = 0.01;
+let dragging = false;
+let lastX = 0;
+
+// input
+canvas.addEventListener("mousedown", e=>{
+  dragging = true;
+  lastX = e.clientX;
+  speed = 0;
+});
+
+canvas.addEventListener("mouseup", ()=> dragging = false);
+
+canvas.addEventListener("mousemove", e=>{
+  if(!dragging) return;
+  const dx = e.clientX - lastX;
+  rot += dx * 0.01;
+  speed = dx * 0.002;
+  lastX = e.clientX;
+});
+
+// touch
+canvas.addEventListener("touchstart", e=>{
+  dragging = true;
+  lastX = e.touches[0].clientX;
+  speed = 0;
+});
+
+canvas.addEventListener("touchend", ()=> dragging = false);
+
+canvas.addEventListener("touchmove", e=>{
+  if(!dragging) return;
+  const dx = e.touches[0].clientX - lastX;
+  rot += dx * 0.01;
+  speed = dx * 0.002;
+  lastX = e.touches[0].clientX;
+});
+
+// DRAW FILLED GLOBE FIRST (THIS FIXES BLACK SCREEN)
+function drawSphere(){
+  ctx.fillStyle = "#0b1a33";
+  ctx.beginPath();
+  ctx.arc(canvas.width/2, canvas.height/2, R, 0, Math.PI*2);
+  ctx.fill();
+}
+
+// grid overlay
+function drawGrid(){
+  const cx = canvas.width/2;
+  const cy = canvas.height/2;
+
+  ctx.strokeStyle = "rgba(120,180,255,0.25)";
+  ctx.lineWidth = 1;
+
+  // latitude lines
+  for(let lat=-80; lat<=80; lat+=20){
+    ctx.beginPath();
+    for(let lon=0; lon<=360; lon+=4){
+      const phi = lat * Math.PI/180;
+      const theta = (lon * Math.PI/180) + rot;
+
+      const x = cx + R * Math.cos(phi) * Math.cos(theta);
+      const y = cy + R * Math.sin(phi);
+
+      if(lon===0) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  // longitude lines
+  for(let lon=0; lon<360; lon+=20){
+    ctx.beginPath();
+    for(let lat=-90; lat<=90; lat+=4){
+      const phi = lat * Math.PI/180;
+      const theta = (lon * Math.PI/180) + rot;
+
+      const x = cx + R * Math.cos(phi) * Math.cos(theta);
+      const y = cy + R * Math.sin(phi);
+
+      if(lat===-90) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+}
+
+// glow
+function glow(){
+  const cx = canvas.width/2;
+  const cy = canvas.height/2;
+
+  const g = ctx.createRadialGradient(cx,cy,10,cx,cy,R*2);
+  g.addColorStop(0,"rgba(80,140,255,0.25)");
+  g.addColorStop(1,"transparent");
+
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx,cy,R*2,0,Math.PI*2);
+  ctx.fill();
+}
+
+// loop
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(!dragging) rot += speed;
+  speed *= 0.98;
+
+  glow();
+  drawSphere();   // IMPORTANT (prevents black screen)
+  drawGrid();
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
